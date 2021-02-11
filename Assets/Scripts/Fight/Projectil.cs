@@ -41,9 +41,11 @@ public class Projectil : MonoBehaviour
         }
         if (speed > 0f && lifetime > 0){
             Entity hitEntity = collider.gameObject.GetComponent<Entity>();
-            if (ArenaHelper.Instance.Hardcore || (!ArenaHelper.Instance.Hardcore && thrower.Team != hitEntity.Team)){
-                //Only apply damage if we are in hardcore mode with friendly fire enable or otherwise if it's an enemy
-                ApplyDamage(hitEntity);
+            if (hitEntity != null){
+                if (ArenaHelper.Instance.Hardcore || (!ArenaHelper.Instance.Hardcore && thrower.Team != hitEntity.Team)){
+                    //Only apply damage if we are in hardcore mode with friendly fire enable or otherwise if it's an enemy
+                    ApplyDamage(hitEntity);
+                }
             }
             speed = 0;
             Explode();
@@ -53,6 +55,7 @@ public class Projectil : MonoBehaviour
     private void ApplyDamage(Entity entity){
         if (entity != null){
             Vector3 hitDirection = (transform.position - entity.transform.position).normalized;
+            hitDirection.y = 0;
             entity.ReceiveHit(damage,hitDirection);
         }
     }

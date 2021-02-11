@@ -220,9 +220,10 @@ public abstract class Entity : MonoBehaviour {
         }
 
         lifeAmount -= hitDamage;
-        OnHit(hitDirection);
         if (lifeAmount <= 0){
             Die();
+        }else{
+            OnHit(hitDirection);
         }
     }
 
