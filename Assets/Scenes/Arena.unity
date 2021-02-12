@@ -160,7 +160,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.9045836}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.37399292, y: 0.8139801}
+  m_AnchoredPosition: {x: -0.37399292, y: 0.81396484}
   m_SizeDelta: {x: 0.2000122, y: -1.6280003}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &81189758
@@ -2068,9 +2068,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7127be17d66b4571a54a62bbc27c78c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  players:
-  - {fileID: 11400000, guid: 198741fd67e264f42a49892f446bf14d, type: 2}
-  - {fileID: 11400000, guid: 0a2610e0f835c4db29e1aa9484a0f489, type: 2}
+  players: []
   gameConfiguration: {fileID: 11400000, guid: 26ab5e1126de1450fab3ec8593fa918f, type: 2}
   map: {fileID: 1362737865}
   agentsLayerMask:

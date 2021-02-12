@@ -73,10 +73,16 @@ public class ArenaHelper : MonoBehaviour
         controls = new ControlBase[gameConfiguration.teamCount];
         colorsUsed = new List<Color>();
         eliminated = new List<int>();
+
+        if (players.Length != gameConfiguration.teamCount){
+            Debug.LogError("There isn't any player in the arena");
+            Application.Quit();
+        }
         
         //load teams
         for (int i = 0; i < gameConfiguration.teamCount ; i++){      
-            Transform spawn = map.GetSpawnTransform();     
+            Transform spawn = map.GetSpawnTransform();
+
             //Create control
             GameObject controlGo = Instantiate(players[i].controlPrefab, spawn.position,Quaternion.identity);
             controlGo.name = "Control_"+players[i].name;
