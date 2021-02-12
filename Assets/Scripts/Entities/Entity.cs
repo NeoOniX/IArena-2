@@ -17,11 +17,13 @@ public abstract class Entity : MonoBehaviour {
     public class TargetInformations{
         public EntityKind kind;
         public int team;
+        public float life;
         public Vector3 position;
 
-        public TargetInformations(EntityKind k, int t, Vector3 p){
+        public TargetInformations(EntityKind k, int t,float l, Vector3 p){
             kind = k;
             team = t;
+            life = l;
             position = p;
         }
     }
@@ -180,7 +182,7 @@ public abstract class Entity : MonoBehaviour {
                     Log("Is in view angle ");
                     if (IsInViewRange(target.position)){
                         Log("Is in view range");
-                        targets.Add(new TargetInformations(targetEntity.Kind, targetEntity.Team, target.position));
+                        targets.Add(new TargetInformations(targetEntity.Kind, targetEntity.Team, targetEntity.lifeAmount, target.position));
                     }
                 }
             }
