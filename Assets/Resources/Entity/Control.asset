@@ -15,9 +15,10 @@ MonoBehaviour:
   entityKind: 0
   lifeAmount: 1000
   reactivityTime: 0
+  speed: 0
   damageOutput: 0
   energyAmount: 0
   energyGainPerTime: 0
   energyCostToShoot: 0
-  viewRadius: 30
+  viewRadius: 10
   viewAngle: 360

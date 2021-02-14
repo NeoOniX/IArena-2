@@ -9,22 +9,25 @@ public class Map : MonoBehaviour {
     public int MaxPlayersCount {
         get { return spawns.Length;}
     }
-    //ressources sur la map ? 
-
 
     private bool[] availableSpawns;
     private NavMeshSurface navMesh;
+    private bool initialized = false;
 
-    void Start(){
+    void Init(){
         navMesh = gameObject.GetComponent<NavMeshSurface>();
 
         availableSpawns = new bool[spawns.Length];
         for (int i = 0; i < availableSpawns.Length;i++){
             availableSpawns[i] = true;
         }
+
+        initialized = true;
     }
 
     public Transform GetSpawnTransform(){
+        if (!initialized)
+            Init();
         List<int> emptys = new List<int>();
         for (int i = 0; i < availableSpawns.Length;i++){
             if (availableSpawns[i])

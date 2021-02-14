@@ -1,0 +1,10 @@
+Mise à jour du 14/02/2021
+--------------------------------
+
+- Correction d'un problème d'affichage du champ de vision des unités de type Control
+- Correction des problèmes de scales des unités de type Control
+- Suites aux corrections précédentes la distance du champ de vision des unités de type Control passe à 10 (au lieu de 30)
+- Les unités ne bloquent plus les champs de vision des autres unités. Seuls les obstacles modifient le champ de vision. 
+- Amélioration de l'UI, correction des proportions en fonction de la taille d'écran
+- Ajout de nouvelles maps : il est désormais possible de choisir une map parmis celle proposés. Voir l'Inspector de ArenaHelper pour choisir. 
+- Ajout de 2 nouvelles maps

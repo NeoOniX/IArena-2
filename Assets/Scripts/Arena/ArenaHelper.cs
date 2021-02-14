@@ -26,9 +26,6 @@ public class ArenaHelper : MonoBehaviour
     private GameConfiguration gameConfiguration;
 
     [SerializeField]
-    private Map map;
-
-    [SerializeField]
     private LayerMask agentsLayerMask;
     public LayerMask AgentsLayerMask { get { return agentsLayerMask;}}
     [SerializeField]
@@ -42,7 +39,7 @@ public class ArenaHelper : MonoBehaviour
 
     [Header("UI")]
     public TMPro.TextMeshProUGUI timeScaleTxt;
-    public TMPro.TextMeshProUGUI[] playerNamesTxt = new TMPro.TextMeshProUGUI[0];
+    public PlayerCard[] playerCards = new PlayerCard[0];
     public GameObject gameOverUI;
     public TMPro.TextMeshProUGUI winnerNameTxt;
 
@@ -53,6 +50,12 @@ public class ArenaHelper : MonoBehaviour
     private int currentTimeScaleIndex = 0;
     private float[] timeScales = new float[4]{ 1, 2, 4, 6};
     private List<Color> colorsUsed = new List<Color>();
+    private Map map;
+
+    [HideInInspector]
+    public bool forceMap;
+    [HideInInspector]
+    public string forcedMapName;
 
     public bool Hardcore {
         get { return gameConfiguration.hardcore; }
@@ -70,13 +73,22 @@ public class ArenaHelper : MonoBehaviour
             return;
         }
 
+        //Choose map
+        SelectMap();
+        if (map == null) return;
+
+        if (gameConfiguration.teamCount > map.MaxPlayersCount){
+            Debug.LogError("Please select a bigger map to use this game mode");
+            Application.Quit(-1);
+        }
+
         controls = new ControlBase[gameConfiguration.teamCount];
         colorsUsed = new List<Color>();
         eliminated = new List<int>();
 
         if (players.Length != gameConfiguration.teamCount){
             Debug.LogError("There isn't any player in the arena");
-            Application.Quit();
+            Application.Quit(-1);
         }
         
         //load teams
@@ -93,6 +105,12 @@ public class ArenaHelper : MonoBehaviour
                 return;
             }
 
+            // ---------- 
+            //Hack to reset control size to the same size as other in height
+            controls[i].transform.localScale = new Vector3(controls[i].transform.localScale.x, 1, controls[i].transform.localScale.z);
+            controls[i].transform.GetChild(0).localScale = Vector3.one;
+            //----------
+
             controls[i].SetTeam(i);
             
             Color c = players[i].color;
@@ -104,10 +122,9 @@ public class ArenaHelper : MonoBehaviour
             colorsUsed.Add(c);
 
             //update UI
-            if (i < playerNamesTxt.Length){
-                if (playerNamesTxt[i] != null){
-                    playerNamesTxt[i].text = players[i].name;
-                    playerNamesTxt[i].color = c;
+            if (i < playerCards.Length){
+                if (playerCards[i] != null){
+                    playerCards[i].Set(players[i].name, c);
                 }
             }
 
@@ -127,7 +144,7 @@ public class ArenaHelper : MonoBehaviour
                     }
                     for (int j = 0; j < u.count ; j++){
                         // instantiate
-                        GameObject created = Instantiate(prefab,controlGo.transform, true);
+                        GameObject created = Instantiate(prefab,spawn.position, Quaternion.identity);
                         created.transform.position = controlGo.transform.position + Vector3.forward - new Vector3(0,controlGo.transform.position.y,0);
                         Agent a = created.GetComponent<Agent>();
                         a.ChangeColor(c);
@@ -143,6 +160,26 @@ public class ArenaHelper : MonoBehaviour
         Time.timeScale = timeScales[currentTimeScaleIndex];
         if (timeScaleTxt != null)
             timeScaleTxt.text = "x"+timeScales[currentTimeScaleIndex];
+    }
+
+    void SelectMap(){
+        if (forceMap){
+            GameObject m = Resources.Load("Maps/"+forcedMapName) as GameObject;
+            if (m == null){
+                Debug.LogError("Trying to force map but can't find it...");
+                return;
+            }
+            map = Instantiate(m).GetComponent<Map>();
+        }else{
+            Object[] maps = Resources.LoadAll("Maps/",typeof(GameObject));
+            if (maps != null && maps.Length > 0){
+                GameObject selectedMap = Instantiate(maps[Random.Range(0,maps.Length)] as GameObject,Vector3.zero, Quaternion.identity);
+                map = selectedMap.GetComponent<Map>();
+            }else{
+                Debug.LogError("Something went wrong with loading of maps...");
+                return;
+            }
+        }
     }
 
     void InstantiatePool(){
@@ -230,7 +267,10 @@ public class ArenaHelper : MonoBehaviour
     }
 
     public bool CanAddMorePlayers(){
-        return players.Length < map.MaxPlayersCount;
+        if (gameConfiguration != null)
+            return players.Length < gameConfiguration.teamCount;
+        else 
+            return false;
     }
 
     public void ChangeGameConfiguration(GameConfiguration configuration){
