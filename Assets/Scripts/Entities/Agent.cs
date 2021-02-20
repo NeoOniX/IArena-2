@@ -38,7 +38,7 @@ public abstract class Agent : AIStateAgent
     }
     
     private Vector3 destination;
-    
+    private bool canShoot = true;
 
     protected override void Awake(){
         base.Awake();
@@ -79,6 +79,11 @@ public abstract class Agent : AIStateAgent
         }
     }
 
+    protected override void LastWordBeforeToDie()
+    {
+        Control.UpdateAgents();
+    }
+
     /// <summary>
     /// Go to position given if a valid path exist
     /// </summary>
@@ -91,13 +96,15 @@ public abstract class Agent : AIStateAgent
     }
 
     protected void Stop(){
-        agent.isStopped = true;
+        if (agent != null && IsAlive)
+            agent.isStopped = true;
     }
     
     private IEnumerator Routine(){
         while (IsAlive){
             OnStateUpdate();
             yield return new WaitForSeconds(ReactivityTime);
+            canShoot = true;
         }
     }
 
@@ -131,7 +138,7 @@ public abstract class Agent : AIStateAgent
     /// <param name="direction"></param>
     /// <returns></returns>
     protected bool Shoot(Vector3 direction){
-        if (energyAmount >= energyCostToShoot && Vector3.Angle(transform.forward,direction) < ViewAngle / 2){
+        if (energyAmount >= energyCostToShoot && Vector3.Angle(transform.forward,direction) < ViewAngle / 2 && canShoot){
             //Instantiate projectil
             Vector3 spawnPos = transform.position + Vector3.up / 4;
             GameObject proj = ArenaHelper.Instance.GetLaserProjectil();
@@ -139,6 +146,7 @@ public abstract class Agent : AIStateAgent
             proj.GetComponent<Projectil>().Setup(this,direction,damageOutput);
             proj.SetActive(true);
             energyAmount -= energyCostToShoot;
+            canShoot = false;
             return true;
         }else{
             return false;

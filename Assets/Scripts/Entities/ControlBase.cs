@@ -43,4 +43,14 @@ public abstract class ControlBase : Entity
         AutoDestruction();
         ArenaHelper.Instance.ControlIsDestroyed(this);
     }
+
+    public void UpdateAgents(){
+        List<Agent> newAgents = new List<Agent>(Agents);
+        foreach (Agent a in Agents){
+            if (a == null || a.gameObject == null || !a.IsAlive){
+                newAgents.Remove(a);
+            }
+        }
+        agents = newAgents;
+    }
 }

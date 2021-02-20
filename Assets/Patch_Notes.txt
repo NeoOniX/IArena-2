@@ -1,3 +1,15 @@
+Mise à jour du 20/02/2021
+--------------------------------
+
+- Les méthodes List<TargetInformations> GetTargets() & TargetInformations GetClosestTarget() deviennent respectivement List<TargetInformations> GetTargets(bool onlyOpponent = true) & TargetInformations GetClosestTarget(bool onlyOpponent = true)
+Par défaut ces deux méthodes renverront uniquement des informations avec uniquement des opposants. Si vous mettez false en paramètre alors vous obtiendrez toutes les cibles en vues y compris de votre équipe.
+- Suppression de log superflu
+- Vous pouvez vérifier le State et la vie d'une entité depuis d'Inspector pour débugger plus facilement
+- Correction d'un problème qui se produisait si vous appeliez Agents de Control et que l'un de vos agents étaient déjà détruit
+- Fix d'un problème qui faisait qu'on pouvait tirer plusieurs fois pendant le même tour
+- Fix divers
+
+
 Mise à jour du 14/02/2021
 --------------------------------
 

@@ -40,6 +40,7 @@ public abstract class Entity : MonoBehaviour {
         get { return kind; }
     }
 
+    [SerializeField]
     private float lifeAmount;
     /// <summary>
     /// Current life amount of the entity
@@ -143,24 +144,33 @@ public abstract class Entity : MonoBehaviour {
     }
 
     /// <summary>
-    /// Get all targets in sight
+    /// Returns targets currently in sight
     /// </summary>
+    /// <param name="onlyOpponent">if true, will only return target from another team</param>
     /// <returns></returns>
-    protected List<TargetInformations> GetTargets(){
-        return targets;
+    protected List<TargetInformations> GetTargets(bool onlyOpponent = true){
+        if (!onlyOpponent)
+            return targets;
+        List<TargetInformations> result = new List<TargetInformations>(targets);
+        foreach (TargetInformations t in targets){
+            if (t.team == Team){
+                result.Remove(t);
+            }
+        }
+        return result;
     }
 
     /// <summary>
-    /// Get the closest target in sight
-    /// This method only returns target from opposite teams 
+    /// Get closest target currently in sight
     /// </summary>
+    /// <param name="onlyOpponent">if true, will only return target from another team</param>
     /// <returns></returns>
-    protected TargetInformations GetClosestTarget(){
+    protected TargetInformations GetClosestTarget(bool onlyOpponent = true){
         float distance = float.MaxValue;
         TargetInformations closest = null;
         foreach (TargetInformations t in targets){
             float d = Vector3.Distance(transform.position, t.position);
-            if (d <= distance && t.team != Team){
+            if (d <= distance && ((onlyOpponent && t.team != Team) || !onlyOpponent)){
                 distance = d;
                 closest = t;
             }   
@@ -176,12 +186,9 @@ public abstract class Entity : MonoBehaviour {
             Transform target = c.transform;
             Entity targetEntity = target.GetComponent<Entity>();
             if (targetEntity != null){
-                Log("it's an entity");
                 //Vector3 dirToTarget = (target.position - transform.position).normalized;
                 if (IsInViewAngle(target.position)){
-                    Log("Is in view angle ");
                     if (IsInViewRange(target.position)){
-                        Log("Is in view range");
                         targets.Add(new TargetInformations(targetEntity.Kind, targetEntity.Team, targetEntity.lifeAmount, target.position));
                     }
                 }

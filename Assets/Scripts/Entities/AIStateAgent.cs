@@ -2,6 +2,7 @@
 
 public abstract class AIStateAgent : Entity
 {
+    [SerializeField]
     private string _state;
     public string State {
         get{ return _state; }
