@@ -84,6 +84,7 @@ public abstract class Entity : MonoBehaviour {
     public int Team { get { return team; }}
 
     private FieldOfView fieldOfView;
+    protected TMPro.TextMeshProUGUI debugTxt;
     private MeshRenderer renderer;
     private List<TargetInformations> targets = new List<TargetInformations>();
 
@@ -101,6 +102,7 @@ public abstract class Entity : MonoBehaviour {
 
     protected virtual void Awake(){
         fieldOfView = GetComponent<FieldOfView>();
+        debugTxt = GetComponentInChildren<TMPro.TextMeshProUGUI>();
     }
 
     protected virtual void Start(){
@@ -114,7 +116,7 @@ public abstract class Entity : MonoBehaviour {
 
     public void ChangeColor(Color color){
         if (renderer == null){
-            renderer = GetComponent<MeshRenderer>();
+            renderer = GetComponentInChildren<MeshRenderer>();
         }
         if (renderer != null){
             renderer.material.SetColor("_BaseColor",color);
@@ -184,7 +186,7 @@ public abstract class Entity : MonoBehaviour {
         foreach(Collider c in targetsC){
             if (c.gameObject == gameObject) continue;
             Transform target = c.transform;
-            Entity targetEntity = target.GetComponent<Entity>();
+            Entity targetEntity = target.GetComponentInParent<Entity>();
             if (targetEntity != null){
                 //Vector3 dirToTarget = (target.position - transform.position).normalized;
                 if (IsInViewAngle(target.position)){

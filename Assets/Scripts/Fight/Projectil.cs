@@ -40,7 +40,7 @@ public class Projectil : MonoBehaviour
             return;
         }
         if (speed > 0f && lifetime > 0){
-            Entity hitEntity = collider.gameObject.GetComponent<Entity>();
+            Entity hitEntity = collider.gameObject.GetComponentInParent<Entity>();
             if (hitEntity != null){
                 if (ArenaHelper.Instance.Hardcore || (!ArenaHelper.Instance.Hardcore && thrower.Team != hitEntity.Team)){
                     //Only apply damage if we are in hardcore mode with friendly fire enable or otherwise if it's an enemy

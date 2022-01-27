@@ -65,6 +65,11 @@ public abstract class Agent : AIStateAgent
 
     protected override void Update(){
         base.Update();
+        if (debugTxt != null && ArenaHelper.Instance.ShowState){
+            debugTxt.text = State.ToString();
+        }else if (debugTxt != null){
+            debugTxt.text = "";
+        }
         RefillEnergy();
     }
 
@@ -140,7 +145,7 @@ public abstract class Agent : AIStateAgent
     protected bool Shoot(Vector3 direction){
         if (energyAmount >= energyCostToShoot && Vector3.Angle(transform.forward,direction) < ViewAngle / 2 && canShoot){
             //Instantiate projectil
-            Vector3 spawnPos = transform.position + Vector3.up / 4;
+            Vector3 spawnPos = transform.position + transform.forward * 1.5f + Vector3.up / 4;
             GameObject proj = ArenaHelper.Instance.GetLaserProjectil();
             proj.transform.position = spawnPos;
             proj.GetComponent<Projectil>().Setup(this,direction,damageOutput);

@@ -1,3 +1,11 @@
+Mise à jour du 27/01/2022
+--------------------------------
+
+- Mise à jour Unity 2021.2.8f1 
+- Rework des prefabs des entités avec séparation du skin du reste du GameObject
+- Ajout de la possibilité de visualiser le State des entités directement en jeu (option ajouté à l'Arena Helper)
+
+
 Mise à jour du 20/02/2021
 --------------------------------
 

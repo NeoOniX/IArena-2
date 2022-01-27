@@ -43,6 +43,9 @@ public class ArenaHelper : MonoBehaviour
     public GameObject gameOverUI;
     public TMPro.TextMeshProUGUI winnerNameTxt;
 
+    [Header("Debug")]
+    public bool ShowState = false;
+
     private List<GameObject> _laserPool = new List<GameObject>();
     private ControlBase[] controls;
     private List<int> eliminated = new List<int>();
@@ -104,12 +107,6 @@ public class ArenaHelper : MonoBehaviour
                 Debug.LogError("Missing Control Component for Control prefab with player "+players[i].name);
                 return;
             }
-
-            // ---------- 
-            //Hack to reset control size to the same size as other in height
-            controls[i].transform.localScale = new Vector3(controls[i].transform.localScale.x, 1, controls[i].transform.localScale.z);
-            controls[i].transform.GetChild(0).localScale = Vector3.one;
-            //----------
 
             controls[i].SetTeam(i);
             
