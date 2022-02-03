@@ -16,7 +16,7 @@ MonoBehaviour:
   lifeAmount: 300
   reactivityTime: 0.7
   speed: 2.5
-  damageOutput: 20
+  damageOutput: 30
   energyAmount: 0
   energyGainPerTime: 0
   energyCostToShoot: 0

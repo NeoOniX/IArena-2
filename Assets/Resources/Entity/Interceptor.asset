@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Interceptor
   m_EditorClassIdentifier: 
   entityKind: 1
-  lifeAmount: 250
+  lifeAmount: 200
   reactivityTime: 0.5
   speed: 5
   damageOutput: 10
