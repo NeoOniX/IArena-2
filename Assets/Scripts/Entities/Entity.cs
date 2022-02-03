@@ -200,9 +200,10 @@ public abstract class Entity : MonoBehaviour {
             Entity targetEntity = target.GetComponentInParent<Entity>();
             if (targetEntity != null){
                 //Vector3 dirToTarget = (target.position - transform.position).normalized;
-                if (IsInViewAngle(target.position)){
-                    if (IsInViewRange(target.position)){
-                        targets.Add(new TargetInformations(targetEntity.Kind, targetEntity.Team, targetEntity.lifeAmount, target.position));
+                if (IsInViewAngle(target.position)){ //dans l'angle de vision
+                    if (IsInViewRange(target.position)){ //à distance de vue
+                        if (!HasObstacleInSight(target.position)) //non caché derrière un obstacle
+                            targets.Add(new TargetInformations(targetEntity.Kind, targetEntity.Team, targetEntity.lifeAmount, target.position));
                     }
                 }
             }
