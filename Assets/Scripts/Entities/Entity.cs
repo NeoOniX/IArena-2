@@ -50,6 +50,16 @@ public abstract class Entity : MonoBehaviour {
         get { return lifeAmount; }
     }
 
+    [SerializeField]
+    private float maxLife;
+    /// <summary>
+    /// Current life amount of the entity
+    /// </summary>
+    /// <value></value>
+    protected float MaxLife {
+        get { return maxLife; }
+    }
+
     private float reactivityTime;
     /// <summary>
     /// Reactivity time of the entity
@@ -135,7 +145,8 @@ public abstract class Entity : MonoBehaviour {
             Debug.LogError("Something's weird, trying to configure an agent without configuration data.");
             return;
         }
-        lifeAmount = configuration.lifeAmount;
+        maxLife = configuration.lifeAmount;
+        lifeAmount = maxLife;
         reactivityTime = configuration.reactivityTime;
         fieldOfView.viewAngle = configuration.viewAngle;
         fieldOfView.viewRadius = configuration.viewRadius;
@@ -199,9 +210,15 @@ public abstract class Entity : MonoBehaviour {
     }
 
     private bool IsInViewRange(Vector3 position){
-        Vector3 direction = (position - transform.position).normalized;
         float distance = Vector3.Distance(transform.position,position);
-        return !Physics.Raycast(transform.position, direction, distance,ArenaHelper.Instance.ObstaclesLayerMask);
+        return distance <= ViewRadius;
+    }
+
+    private bool HasObstacleInSight(Vector3 position){
+        Vector3 direction = (position - transform.position).normalized;
+        float distance = Vector3.Distance(transform.position, position);
+        return Physics.Raycast(transform.position, direction, distance, ArenaHelper.Instance.ObstaclesLayerMask)
+            || Physics.RaycastAll(transform.position, direction, distance, ArenaHelper.Instance.AgentsLayerMask).Length > 1;
     }
 
     private bool IsInViewAngle(Vector3 position){
@@ -215,7 +232,7 @@ public abstract class Entity : MonoBehaviour {
     /// <param name="position"></param>
     /// <returns></returns>
     protected bool CanView(Vector3 position){
-        return IsInViewAngle(position) && IsInViewRange(position);
+        return IsInViewAngle(position) && IsInViewRange(position) && !HasObstacleInSight(position);
     }
 
     /// <summary>
