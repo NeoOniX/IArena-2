@@ -1,3 +1,8 @@
+Mise à jour du 04/02/2022
+--------------------------------
+
+- Ajout de la méthode bool IsThereAWall(Vector3 direction) qui prend en paramètre une direction, et qui permet de savoir si votre unité voit un obstacle
+
 Mise à jour du 27/01/2022
 --------------------------------
 

@@ -227,6 +227,10 @@ public abstract class Entity : MonoBehaviour {
         return Vector3.Angle(transform.forward,direction) < ViewAngle / 2;
     }
 
+    protected bool IsThereAWall(Vector3 direction){
+        return Physics.Raycast(transform.position, direction, ViewRadius, ArenaHelper.Instance.ObstaclesLayerMask);
+    }
+
     /// <summary>
     /// Can view this position from current position? 
     /// </summary>
