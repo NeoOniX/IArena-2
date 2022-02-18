@@ -93,6 +93,9 @@ public class ArenaHelper : MonoBehaviour
             Debug.LogError("There isn't any player in the arena");
             Application.Quit(-1);
         }
+
+        int currentTeam = 0;
+        int currentPlayerCountInTeam = 0;
         
         //load teams
         for (int i = 0; i < gameConfiguration.teamCount ; i++){      
@@ -108,7 +111,13 @@ public class ArenaHelper : MonoBehaviour
                 return;
             }
 
-            controls[i].SetTeam(i);
+            controls[i].SetTeam(currentTeam);
+            currentPlayerCountInTeam++;
+
+            if (gameConfiguration.playerPerTeam == currentPlayerCountInTeam){
+                currentTeam++;
+                currentPlayerCountInTeam = 0;
+            }
             
             Color c = players[i].color;
             if (colorsUsed.Contains(c)){
@@ -121,7 +130,7 @@ public class ArenaHelper : MonoBehaviour
             //update UI
             if (i < playerCards.Length){
                 if (playerCards[i] != null){
-                    playerCards[i].Set(players[i].name, c);
+                    playerCards[i].Set(players[i].name, c, controls[i].Team);
                 }
             }
 
@@ -177,6 +186,8 @@ public class ArenaHelper : MonoBehaviour
                 return;
             }
         }
+        //Setup camera
+        Camera.main.fieldOfView = map.CamFOV;
     }
 
     void InstantiatePool(){

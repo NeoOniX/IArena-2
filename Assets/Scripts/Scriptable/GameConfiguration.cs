@@ -13,6 +13,9 @@ public class GameConfiguration : ScriptableObject {
 
     [Range(1,4)]    
     public int teamCount = 2;
+
+    [Range(1,4)]
+    public int playerPerTeam = 1;
     public List<Units> baseUnits;
 
     public bool hardcore = false;

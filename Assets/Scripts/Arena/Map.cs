@@ -5,6 +5,12 @@ using UnityEngine.AI;
 public class Map : MonoBehaviour {
 
     [SerializeField]
+    private int camFOV = 55;
+    public int CamFOV {
+        get { return camFOV;}
+    }
+
+    [SerializeField]
     private Transform[] spawns = new Transform[0];
     public int MaxPlayersCount {
         get { return spawns.Length;}
