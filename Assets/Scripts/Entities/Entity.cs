@@ -12,22 +12,6 @@ public enum EntityKind{
 }
 
 public abstract class Entity : MonoBehaviour {
-
-    [Serializable]
-    public class TargetInformations{
-        public EntityKind kind;
-        public int team;
-        public float life;
-        public Vector3 position;
-
-        public TargetInformations(EntityKind k, int t,float l, Vector3 p){
-            kind = k;
-            team = t;
-            life = l;
-            position = p;
-        }
-    }
-
     [Header("Debug")]
     public bool printLogs = false;
 
@@ -46,7 +30,7 @@ public abstract class Entity : MonoBehaviour {
     /// Current life amount of the entity
     /// </summary>
     /// <value></value>
-    protected float Life {
+    public float Life {
         get { return lifeAmount; }
     }
 
@@ -66,7 +50,7 @@ public abstract class Entity : MonoBehaviour {
     /// The entity can take an action every ReactivityTime in seconds
     /// </summary>
     /// <value></value>
-    protected float ReactivityTime {
+    public float ReactivityTime {
         get { return reactivityTime; }
     }    
 
@@ -74,7 +58,7 @@ public abstract class Entity : MonoBehaviour {
     /// View radius of the entity
     /// </summary>
     /// <value></value>
-    protected float ViewRadius {
+    public float ViewRadius {
         get { return fieldOfView.viewRadius; }
     }
 
@@ -82,7 +66,7 @@ public abstract class Entity : MonoBehaviour {
     /// View angle of the entity
     /// </summary>
     /// <value></value>
-    protected float ViewAngle {
+    public float ViewAngle {
         get { return fieldOfView.viewAngle; }
     }
 
@@ -161,7 +145,7 @@ public abstract class Entity : MonoBehaviour {
     /// </summary>
     /// <param name="onlyOpponent">if true, will only return target from another team</param>
     /// <returns></returns>
-    protected List<TargetInformations> GetTargets(bool onlyOpponent = true){
+    public List<TargetInformations> GetTargets(bool onlyOpponent = true){
         if (!onlyOpponent)
             return targets;
         List<TargetInformations> result = new List<TargetInformations>(targets);
@@ -178,7 +162,7 @@ public abstract class Entity : MonoBehaviour {
     /// </summary>
     /// <param name="onlyOpponent">if true, will only return target from another team</param>
     /// <returns></returns>
-    protected TargetInformations GetClosestTarget(bool onlyOpponent = true){
+    public TargetInformations GetClosestTarget(bool onlyOpponent = true){
         float distance = float.MaxValue;
         TargetInformations closest = null;
         foreach (TargetInformations t in targets){
@@ -193,7 +177,7 @@ public abstract class Entity : MonoBehaviour {
 
     void FindVisibleAgents(){
         targets.Clear();
-        Collider[] targetsC = Physics.OverlapSphere(transform.position,ViewRadius,ArenaHelper.Instance.AgentsLayerMask, QueryTriggerInteraction.Collide);
+        Collider[] targetsC = Physics.OverlapSphere(transform.position,ViewRadius,ArenaManager.Instance.AgentsLayerMask, QueryTriggerInteraction.Collide);
         foreach(Collider c in targetsC){
             if (c.gameObject == gameObject) continue;
             Transform target = c.transform;
@@ -218,8 +202,8 @@ public abstract class Entity : MonoBehaviour {
     private bool HasObstacleInSight(Vector3 position){
         Vector3 direction = (position - transform.position).normalized;
         float distance = Vector3.Distance(transform.position, position);
-        return Physics.Raycast(transform.position, direction, distance, ArenaHelper.Instance.ObstaclesLayerMask)
-            || Physics.RaycastAll(transform.position, direction, distance, ArenaHelper.Instance.AgentsLayerMask).Length > 1;
+        return Physics.Raycast(transform.position, direction, distance, ArenaManager.Instance.ObstaclesLayerMask)
+            || Physics.RaycastAll(transform.position, direction, distance, ArenaManager.Instance.AgentsLayerMask).Length > 1;
     }
 
     private bool IsInViewAngle(Vector3 position){
@@ -228,7 +212,7 @@ public abstract class Entity : MonoBehaviour {
     }
 
     protected bool IsThereAWall(Vector3 direction){
-        return Physics.Raycast(transform.position, direction, ViewRadius, ArenaHelper.Instance.ObstaclesLayerMask);
+        return Physics.Raycast(transform.position, direction, ViewRadius, ArenaManager.Instance.ObstaclesLayerMask);
     }
 
     /// <summary>

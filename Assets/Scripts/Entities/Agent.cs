@@ -23,7 +23,7 @@ public abstract class Agent : AIStateAgent
     }
 
     private float damageOutput;
-    protected float DamageOutput{
+    public float DamageOutput{
         get { return damageOutput; }
     }
 
@@ -65,7 +65,7 @@ public abstract class Agent : AIStateAgent
 
     protected override void Update(){
         base.Update();
-        if (debugTxt != null && ArenaHelper.Instance.ShowState){
+        if (debugTxt != null && ArenaManager.Instance.ShowState){
             debugTxt.text = State.ToString();
         }else if (debugTxt != null){
             debugTxt.text = "";
@@ -94,7 +94,7 @@ public abstract class Agent : AIStateAgent
     /// </summary>
     /// <param name="position">position where you want to go</param>
     /// <returns>true if a valid path exist, false otherwise</returns>
-    protected bool GoTo(Vector3 position){
+    public bool GoTo(Vector3 position){
         destination = position;
         agent.isStopped = false;
         return agent.SetDestination(position);
@@ -119,7 +119,7 @@ public abstract class Agent : AIStateAgent
     /// <param name="direction">normalized direction</param>
     /// <param name="distance">distance you want to travel accross direction</param>
     /// <returns>true if a valid path exist, false otherwise</returns>
-    protected bool GoTowards(Vector3 direction, float distance){
+    public bool GoTowards(Vector3 direction, float distance){
         Vector3 destination = transform.position + direction * distance;
         return GoTo(destination);
     }
@@ -130,7 +130,7 @@ public abstract class Agent : AIStateAgent
     /// <param name="origin"></param>
     /// <param name="distance"></param>
     /// <returns></returns>
-    protected Vector3 GetRandomPositionOnNavMesh(Vector3 origin, float distance) {
+    public Vector3 GetRandomPositionOnNavMesh(Vector3 origin, float distance) {
         Vector3 dir = origin + Random.insideUnitSphere * distance;
         NavMeshHit hit;
         NavMesh.SamplePosition(dir,out hit,distance,-1);
@@ -142,13 +142,13 @@ public abstract class Agent : AIStateAgent
     /// </summary>
     /// <param name="direction"></param>
     /// <returns></returns>
-    protected bool Shoot(Vector3 direction){
+    public bool Shoot(Vector3 direction){
         if (energyAmount >= energyCostToShoot && Vector3.Angle(transform.forward,direction) < ViewAngle / 2 && canShoot){
             //Instantiate projectil
             Vector3 spawnPos = transform.position + transform.forward * 1.5f + Vector3.up / 4;
-            GameObject proj = ArenaHelper.Instance.GetLaserProjectil();
+            GameObject proj = ArenaManager.Instance.GetProjectile();
             proj.transform.position = spawnPos;
-            proj.GetComponent<Projectil>().Setup(this,direction,damageOutput);
+            proj.GetComponent<Projectile>().Setup(this,direction,damageOutput);
             proj.SetActive(true);
             energyAmount -= energyCostToShoot;
             canShoot = false;

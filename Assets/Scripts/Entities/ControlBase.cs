@@ -5,7 +5,7 @@ public abstract class ControlBase : Entity
 {
     public Vector3 spawnUnitPosition;
     private List<Agent> agents = new List<Agent>();
-    protected List<Agent> Agents {  get { return agents;}}
+    public List<Agent> Agents {  get { return agents;}}
 
     protected override void Start(){
         kind = EntityKind.Control;
@@ -20,7 +20,7 @@ public abstract class ControlBase : Entity
         agents.Add(agent);
     }
 
-    protected List<T> GetAgentsOfType<T>() where T : Agent {
+    public List<T> GetAgentsOfType<T>() where T : Agent {
         List<T> ret = new List<T>();
         foreach (Agent a in Agents){
             if (a is T){
@@ -41,7 +41,7 @@ public abstract class ControlBase : Entity
     {
         base.LastWordBeforeToDie();
         AutoDestruction();
-        ArenaHelper.Instance.ControlIsDestroyed(this);
+        ArenaManager.Instance.ControlIsDestroyed(this);
     }
 
     public void UpdateAgents(){
