@@ -8,6 +8,7 @@ public class MainMenu : MonoBehaviour
     [Header("PlayerEditor")]
     public Transform playerList;
     public GameObject playerEditorCardPrefab;
+    public GameObject playerEditor;
 
 
     // Start is called before the first frame update
