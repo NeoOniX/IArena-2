@@ -1,0 +1,84 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+
+public class LogManager : MonoBehaviour
+{
+    private static LogManager _instance;
+    public static LogManager Instance
+    {
+        get { return _instance; }
+    }
+
+    void Awake()
+    {
+        if (_instance != null)
+        {
+            DestroyImmediate(this.gameObject);
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    [Header("UI Prefabs")]
+    public GameObject info;
+    public GameObject warn;
+    public GameObject error;
+    [Header("GameObjects")]
+    public Transform list;
+
+    public static void Info(string message, bool screen = true, bool file = false)
+    {
+        if (screen)
+        {
+            GameObject log = Instantiate(Instance.info);
+            Instance.Log(log, message);
+        }
+        if (file)
+        {
+            FileManager.LogInFile("Info : " + message);
+        }
+    }
+
+    public static void Warn(string message, bool screen = true, bool file = false)
+    {
+        if (screen)
+        {
+            GameObject log = Instantiate(Instance.warn);
+            Instance.Log(log, message);
+        }
+        if (file)
+        {
+            FileManager.LogInFile("Warning : " + message);
+        }
+    }
+
+    public static void Error(string message, bool screen = true, bool file = false)
+    {
+        if (screen)
+        {
+            GameObject log = Instantiate(Instance.error);
+            Instance.Log(log, message);
+        }
+        if (file)
+        {
+            FileManager.LogInFile("Error : " + message);
+        }
+    }
+
+    private void Log(GameObject log, string message)
+    {
+        log.transform.GetChild(1).GetComponent<TMP_Text>().text += message;
+        log.transform.SetParent(list, false);
+        log.transform.SetAsFirstSibling();
+        StartCoroutine(waitAndDestroy(10, log));
+    }
+
+    private IEnumerator waitAndDestroy(int seconds, GameObject toDestroy)
+    {
+        yield return new WaitForSeconds(seconds);
+        Destroy(toDestroy);
+    }
+}

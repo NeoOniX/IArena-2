@@ -5,6 +5,9 @@ using TMPro;
 
 public class PlayerEditor : MonoBehaviour
 {
+    [Header("GameObjects")]
+    public GameObject playerEditorMenu;
+    public MainMenu mainMenu;
     [Header("Name")]
     public TMP_InputField name;
     [Header("Color")]
@@ -33,11 +36,12 @@ public class PlayerEditor : MonoBehaviour
                 Color c = defaultColor;
                 ColorUtility.TryParseHtmlString(value, out c);
                 color.textComponent.color = c;
+                currentPlayer.color = value;
             } else
             {
                 color.textComponent.color = defaultColor;
+                currentPlayer.color = "#" + ColorUtility.ToHtmlStringRGB(defaultColor);
             }
-            //currentPlayer.color = value;
         }
     }
 
@@ -91,7 +95,11 @@ public class PlayerEditor : MonoBehaviour
     public void SavePlayer()
     {
         ArenaManager.Instance.RemovePlayer(oldCurrentPlayer);
+        ArenaManager.Instance.SavePlayer(currentPlayer);
         ArenaManager.Instance.AddPlayer(currentPlayer);
+        gameObject.SetActive(false);
+        playerEditorMenu.SetActive(true);
+        mainMenu.ShowPlayers();
     }
 
     public void OpenPlayer(PlayerConfig player)

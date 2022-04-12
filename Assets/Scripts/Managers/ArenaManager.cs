@@ -17,7 +17,16 @@ public class ArenaManager : MonoBehaviour
             return;
         }
         _instance = this;
+        DontDestroyOnLoad(gameObject);
     }
+
+    [Header("Prefabs")]
+    [SerializeField]
+    private GameObject controlBase;
+    [SerializeField]
+    private GameObject destructorBase;
+    [SerializeField]
+    private GameObject interceptorBase;
 
     [Header("Layers")]
     [SerializeField]
@@ -26,21 +35,6 @@ public class ArenaManager : MonoBehaviour
     [SerializeField]
     private LayerMask obstaclesLayerMask;
     public LayerMask ObstaclesLayerMask { get { return obstaclesLayerMask; } }
-
-    [Header("Defaults")]
-    [SerializeField]
-    private GameConfiguration defaultConfiguration;
-    [SerializeField]
-    private Theme defaultTheme;
-    [SerializeField]
-    private Map defaultMap;
-
-    [SerializeField]
-    private List<PlayerConfig> players = new List<PlayerConfig>();
-    public int PlayerCount
-    {
-        get { return players.Count; }
-    }
 
     [Header("Pool")]
     public int poolCount = 10;
@@ -55,6 +49,11 @@ public class ArenaManager : MonoBehaviour
     [Header("Debug")]
     public bool ShowState = false;
 
+    private List<PlayerConfig> players = new List<PlayerConfig>();
+    private List<PlayerConfig> includedPlayers = new List<PlayerConfig>();
+
+    public bool showHealth = false;
+
     private List<GameObject> _pool = new List<GameObject>();
     private ControlBase[] controls;
     private List<int> eliminated = new List<int>();
@@ -63,83 +62,172 @@ public class ArenaManager : MonoBehaviour
     private float[] timeScales = new float[4] { 1, 2, 4, 6 };
     private List<Color> colorsUsed = new List<Color>();
 
-    private Theme theme;
-    private GameConfiguration gameConfiguration;
-    private Map map;
-
     [HideInInspector]
-    public bool forceMap;
+    public List<GameConfiguration> gameConfigurations;
     [HideInInspector]
-    public string forcedMapName;
+    public List<Theme> themes;
+    [HideInInspector]
+    public List<GameObject> maps;
 
     public bool Hardcore
     {
         get { return gameConfiguration.hardcore; }
+        set { gameConfiguration.hardcore = value; }
     }
+
+    public int gameConfigurationIndex
+    {
+        get { return gameConfigurations.IndexOf(gameConfiguration); }
+        set
+        {
+            gameConfiguration = gameConfigurations[value];
+        }
+    }
+
+    public int themeIndex
+    {
+        get { return themes.IndexOf(theme); }
+        set
+        {
+            theme = themes[value];
+        }
+    }
+
+    private bool _mapRandom = true;
+
+    public bool MapRandom
+    {
+        get { return _mapRandom; }
+        set { _mapRandom = value; }
+    }
+
+    public int mapIndex
+    {
+        get { return maps.IndexOf(map.gameObject); }
+        set
+        {
+            map = maps[value].GetComponent<Map>();
+        }
+    }
+
+    private Theme theme;
+    private GameConfiguration gameConfiguration;
+    private Map map;
+    private Map terrain;
 
     void Start()
     {
+        GetResources();
         LoadPlayersFromFiles();
         UseDefaults();
     }
 
     public void UseDefaults()
     {
-        gameConfiguration = defaultConfiguration;
-        theme = defaultTheme;
-        map = defaultMap;
+        gameConfiguration = gameConfigurations[0];
+        theme = themes[0];
+        map = maps[0].GetComponent<Map>();
     }
 
-    void InitGame()
+    private void GetResources()
     {
+        // GameConfigs
+        Object[] tmp;
+        tmp = Resources.LoadAll("GameConfigurations/", typeof(GameConfiguration));
+
+        foreach (Object obj in tmp)
+        {
+            gameConfigurations.Add(obj as GameConfiguration);
+        }
+
+        // Themes
+        tmp = Resources.LoadAll("Themes/", typeof(Theme));
+
+        foreach (Object obj in tmp)
+        {
+            themes.Add(obj as Theme);
+        }
+
+        // Maps
+        tmp = Resources.LoadAll("Maps/", typeof(GameObject));
+
+        foreach (Object obj in tmp)
+        {
+            maps.Add(obj as GameObject);
+        }
+    }
+
+    public bool CanInitGame()
+    {
+        // Check Config
+        if (gameConfiguration == null) return false;
+
+        // Check count
+        bool count = true;
+
+        if (includedPlayers.Count != gameConfiguration.teamCount)
+        {
+            LogManager.Error("The player count doesn't match with the current match settings.");
+            count = false;
+        }
+
+        if (gameConfiguration.teamCount != map.MaxPlayersCount)
+        {
+            LogManager.Error("The map doesn't match with the current match settings.");
+            count = false;
+        }
+
+        if (includedPlayers.Count != map.MaxPlayersCount)
+        {
+            LogManager.Error("The player count doesn't match with the choosen map.");
+            count = false;
+        }
+
+        if (!count) return false;
+
+        // Check Map
+        if (map == null) return false;
+
+        // Everything OK
+        return true;
+    }
+
+    public void InitGame()
+    {
+        if (!CanInitGame()) return;
+
         // Projectiles Pool
         InstantiatePool();
 
-        // Check players count
-        if (players.Count != gameConfiguration.teamCount)
-        {
-            Debug.LogError("There isn't enough players to play with this game configuration");
-            return;
-        }
-
         // Choose map
         SelectMap();
-        if (map == null) return;
-
-        if (gameConfiguration.teamCount > map.MaxPlayersCount)
-        {
-            Debug.LogError("Please select a bigger map to use this game mode");
-            Application.Quit(-1);
-        }
 
         controls = new ControlBase[gameConfiguration.teamCount];
         colorsUsed = new List<Color>();
         eliminated = new List<int>();
 
-        if (players.Count != gameConfiguration.teamCount)
-        {
-            Debug.LogError("There isn't any player in the arena");
-            Application.Quit(-1);
-        }
-
         int currentTeam = 0;
         int currentPlayerCountInTeam = 0;
 
-        //load teams
+        // Load teams
         for (int i = 0; i < gameConfiguration.teamCount; i++)
         {
-            Transform spawn = map.GetSpawnTransform();
+            Transform spawn = terrain.GetSpawnTransform();
 
             //Create control
-            GameObject controlGo = Instantiate(theme.control, spawn.position, Quaternion.identity);
-            // Add Script to control
-            // ...
-            controlGo.name = "Control_" + players[i].name;
+            GameObject controlGo = Instantiate(controlBase, spawn.position, Quaternion.identity);
+            GameObject skin = Instantiate(theme.control, controlGo.transform);
+            skin.transform.SetAsFirstSibling();
+            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].control, (object script) =>
+            {
+                controlGo.AddComponent(script.GetType());
+            });
+            controlGo.name = "Control_" + includedPlayers[i].name;
             controls[i] = controlGo.GetComponent<ControlBase>();
 
             if (controls[i] == null)
             {
-                Debug.LogError("Missing Control Component for Control prefab with player " + players[i].name);
+                Debug.LogError("Missing Control Component for Control prefab with player " + includedPlayers[i].name);
                 return;
             }
 
@@ -153,7 +241,7 @@ public class ArenaManager : MonoBehaviour
             }
 
             Color c;
-            ColorUtility.TryParseHtmlString(players[i].color, out c);
+            ColorUtility.TryParseHtmlString(includedPlayers[i].color, out c);
             if (colorsUsed.Contains(c))
             {
                 //Already used color lets choose another color
@@ -167,7 +255,7 @@ public class ArenaManager : MonoBehaviour
             {
                 if (playerCards[i] != null)
                 {
-                    playerCards[i].Set(players[i].name, c, controls[i].Team);
+                    playerCards[i].Set(includedPlayers[i].name, c, controls[i].Team);
                 }
             }
 
@@ -176,29 +264,24 @@ public class ArenaManager : MonoBehaviour
                 //Add units
                 foreach (GameConfiguration.Units u in gameConfiguration.baseUnits)
                 {
-                    GameObject prefab = null;
-                    // object script = null;
                     switch (u.kind)
                     {
                         case EntityKind.Interceptor:
-                            prefab = theme.interceptor;
+                            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].interceptor, (object script) =>
+                            {
+                                AddUnits(controls[i], c, u.count, interceptorBase, theme.interceptor, script);
+                            });
                             break;
                         case EntityKind.Destructor:
-                            prefab = theme.destructor;
+                            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].destructor, (object script) =>
+                            {
+                                AddUnits(controls[i], c, u.count, destructorBase, theme.destructor, script);
+                            });
                             break;
                         default:
                             continue;
                     }
-                    for (int j = 0; j < u.count; j++)
-                    {
-                        // instantiate
-                        GameObject created = Instantiate(prefab, spawn.position, Quaternion.identity);
-                        // created.AddComponent(script.GetType());
-                        created.transform.position = controlGo.transform.position + Vector3.forward - new Vector3(0, controlGo.transform.position.y, 0);
-                        Agent a = created.GetComponent<Agent>();
-                        a.ChangeColor(c);
-                        controls[i].AddAgent(a);
-                    }
+                    
                 }
             }
         }
@@ -211,32 +294,47 @@ public class ArenaManager : MonoBehaviour
             timeScaleTxt.text = "x" + timeScales[currentTimeScaleIndex];
     }
 
+    void AddUnits(ControlBase control, Color c, int quantity, GameObject baseObj, GameObject prefab, object script)
+    {
+        for (int j = 0; j < quantity; j++)
+        {
+            // Instantiate
+            GameObject created = Instantiate(baseObj, control.transform.position, Quaternion.identity);
+            GameObject skin = Instantiate(prefab, created.transform);
+            skin.transform.SetAsFirstSibling();
+            created.AddComponent(script.GetType());
+            created.transform.position = control.transform.position + Vector3.forward - new Vector3(0, control.transform.position.y, 0);
+            Agent a = created.GetComponent<Agent>();
+            a.ChangeColor(c);
+            control.AddAgent(a);
+        }
+    }
+
     void SelectMap()
     {
-        if (forceMap)
+        // Random map
+        if (MapRandom)
         {
-            GameObject m = Resources.Load("Maps/" + forcedMapName) as GameObject;
-            if (m == null)
+            if (maps != null && maps.Count > 0)
             {
-                Debug.LogError("Trying to force map but can't find it...");
-                return;
-            }
-            map = Instantiate(m).GetComponent<Map>();
-        }
-        else
-        {
-            Object[] maps = Resources.LoadAll("Maps/", typeof(GameObject));
-            if (maps != null && maps.Length > 0)
-            {
-                GameObject selectedMap = Instantiate(maps[Random.Range(0, maps.Length)] as GameObject, Vector3.zero, Quaternion.identity);
-                map = selectedMap.GetComponent<Map>();
+                List<GameObject> list = maps.FindAll((map) => map.GetComponent<Map>().MaxPlayersCount == includedPlayers.Count);
+                if (list.Count == 0)
+                {
+                    LogManager.Info("No map available for the selected player count.");
+                    return;
+                }
+                map = list[Random.Range(0, list.Count)].GetComponent<Map>();
             }
             else
             {
-                Debug.LogError("Something went wrong with loading of maps...");
+                LogManager.Error("Something went wrong with selection and loading of random map.", file: true);
                 return;
             }
         }
+
+        // Instantiate Map
+        terrain = Instantiate(map.gameObject).GetComponent<Map>();
+
         //Setup camera
         Camera.main.fieldOfView = map.CamFOV;
     }
@@ -288,8 +386,8 @@ public class ArenaManager : MonoBehaviour
 
         //Remove players from actual players
         eliminated.Add(control.Team);
-        Debug.Log("Eliminated " + eliminated.Count + " / " + players.Count);
-        if (eliminated.Count == players.Count - 1)
+        Debug.Log("Eliminated " + eliminated.Count + " / " + includedPlayers.Count);
+        if (eliminated.Count == includedPlayers.Count - 1)
         {
             Debug.Log("Finish");
             //We're done we got our winner
@@ -300,14 +398,16 @@ public class ArenaManager : MonoBehaviour
                     //Show gameover screen
                     if (winnerNameTxt != null)
                     {
-                        winnerNameTxt.text = players[c.Team].name;
+                        winnerNameTxt.text = includedPlayers[c.Team].name;
                     }
                     gameOverUI.SetActive(true);
-                    Debug.Log("Winner is " + players[c.Team].name + "!");
+                    Debug.Log("Winner is " + includedPlayers[c.Team].name + "!");
                 }
             }
         }
     }
+
+    // Time Scale
 
     public void TimeScaleUp()
     {
@@ -326,6 +426,8 @@ public class ArenaManager : MonoBehaviour
         Time.timeScale = enable ? 0 : timeScales[currentTimeScaleIndex];
     }
 
+    // IArena Players
+
     public void LoadPlayersFromFiles()
     {
         RemoveAllPlayers();
@@ -333,6 +435,7 @@ public class ArenaManager : MonoBehaviour
         {
             string content = FileManager.ReadFile(path);
             PlayerConfig p = JsonUtility.FromJson<PlayerConfig>(content);
+            p.path = path;
             AddPlayer(p);
         }
     }
@@ -344,12 +447,26 @@ public class ArenaManager : MonoBehaviour
 
     public void AddPlayer(PlayerConfig p)
     {
+        
         players.Add(p);
+    }
+
+    public void SavePlayer(PlayerConfig p)
+    {
+        PlayerConfigFile player = new PlayerConfigFile(p);
+        if (p.path == null)
+        {
+            string path = FileManager.SaveFile("Players", p.name, new List<FileManager.Extensions>() { FileManager.Extensions.JSON });
+            FileManager.WriteFile(path, JsonUtility.ToJson(player, true));
+        } else
+        {
+            FileManager.WriteFile(p.path, JsonUtility.ToJson(player, true));
+        }
     }
 
     public void RemovePlayer(PlayerConfig p)
     {
-        players.Remove(p);
+        if (players.Contains(p)) players.Remove(p);
     }
 
     public void RemoveAllPlayers()
@@ -357,13 +474,37 @@ public class ArenaManager : MonoBehaviour
         players = new List<PlayerConfig>();
     }
 
+    // Match included Players
+
     public bool CanAddMorePlayers()
     {
         if (gameConfiguration != null)
-            return players.Count < gameConfiguration.teamCount;
+            return includedPlayers.Count < gameConfiguration.teamCount;
         else
             return false;
     }
+
+    public List<PlayerConfig> GetIncludedPlayers()
+    {
+        return includedPlayers;
+    }
+
+    public void AddIncludedPlayer(PlayerConfig player)
+    {
+        includedPlayers.Add(player);
+    }
+
+    public void RemoveIncludedPlayer(PlayerConfig player)
+    {
+        includedPlayers.Remove(player);
+    }
+
+    public void RemoveAllIncludedPlayers()
+    {
+        includedPlayers = new List<PlayerConfig>();
+    }
+
+    // Game Config
 
     public void ChangeGameConfiguration(GameConfiguration configuration)
     {

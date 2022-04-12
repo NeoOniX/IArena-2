@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 066c170b044ff6e44827bc35824344b0, type: 3}
   m_Name: Original
   m_EditorClassIdentifier: 
-  projectil: {fileID: 2115514145958413827, guid: af8de5e1302607d46acbbe53787c9e8b,
+  projectile: {fileID: 2115514145958413827, guid: af8de5e1302607d46acbbe53787c9e8b,
     type: 3}
   control: {fileID: 3430330650245319497, guid: 58fd39b9545d46b4f8276a95a1ea5998, type: 3}
   destructor: {fileID: 1109480066068870536, guid: 4d253a77f5861d348b625a1130228b84,
