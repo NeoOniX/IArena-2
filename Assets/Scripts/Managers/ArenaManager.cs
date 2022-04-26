@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System;
 using System.Collections.Generic;
 
 public class ArenaManager : MonoBehaviour
@@ -132,10 +134,10 @@ public class ArenaManager : MonoBehaviour
     private void GetResources()
     {
         // GameConfigs
-        Object[] tmp;
+        UnityEngine.Object[] tmp;
         tmp = Resources.LoadAll("GameConfigurations/", typeof(GameConfiguration));
 
-        foreach (Object obj in tmp)
+        foreach (UnityEngine.Object obj in tmp)
         {
             gameConfigurations.Add(obj as GameConfiguration);
         }
@@ -143,7 +145,7 @@ public class ArenaManager : MonoBehaviour
         // Themes
         tmp = Resources.LoadAll("Themes/", typeof(Theme));
 
-        foreach (Object obj in tmp)
+        foreach (UnityEngine.Object obj in tmp)
         {
             themes.Add(obj as Theme);
         }
@@ -151,7 +153,7 @@ public class ArenaManager : MonoBehaviour
         // Maps
         tmp = Resources.LoadAll("Maps/", typeof(GameObject));
 
-        foreach (Object obj in tmp)
+        foreach (UnityEngine.Object obj in tmp)
         {
             maps.Add(obj as GameObject);
         }
@@ -214,87 +216,86 @@ public class ArenaManager : MonoBehaviour
         {
             Transform spawn = terrain.GetSpawnTransform();
 
-            //Create control
-            GameObject controlGo = Instantiate(controlBase, spawn.position, Quaternion.identity);
-            GameObject skin = Instantiate(theme.control, controlGo.transform);
-            skin.transform.SetAsFirstSibling();
-            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].control, (object script) =>
+            // Get all types from player
+            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].source, (CompiledData data) =>
             {
-                controlGo.AddComponent(script.GetType());
-            });
-            controlGo.name = "Control_" + includedPlayers[i].name;
-            controls[i] = controlGo.GetComponent<ControlBase>();
+                //Create control
+                GameObject controlGo = Instantiate(controlBase, spawn.position, Quaternion.identity);
+                GameObject skin = Instantiate(theme.control, controlGo.transform);
+                skin.transform.SetAsFirstSibling();
+                controlGo.AddComponent(data.control);
+                controlGo.name = "Control_" + includedPlayers[i].name;
+                controls[i] = controlGo.GetComponent<ControlBase>();
 
-            if (controls[i] == null)
-            {
-                Debug.LogError("Missing Control Component for Control prefab with player " + includedPlayers[i].name);
-                return;
-            }
-
-            controls[i].SetTeam(currentTeam);
-            currentPlayerCountInTeam++;
-
-            if (gameConfiguration.playerPerTeam == currentPlayerCountInTeam)
-            {
-                currentTeam++;
-                currentPlayerCountInTeam = 0;
-            }
-
-            Color c;
-            ColorUtility.TryParseHtmlString(includedPlayers[i].color, out c);
-            if (colorsUsed.Contains(c))
-            {
-                //Already used color lets choose another color
-                c = Random.ColorHSV();
-            }
-            controls[i].ChangeColor(c);
-            colorsUsed.Add(c);
-
-            //update UI
-            if (i < playerCards.Length)
-            {
-                if (playerCards[i] != null)
+                if (controls[i] == null)
                 {
-                    playerCards[i].Set(includedPlayers[i].name, c, controls[i].Team);
+                    Debug.LogError("Missing Control Component for Control prefab with player " + includedPlayers[i].name);
+                    return;
                 }
-            }
 
-            if (gameConfiguration.baseUnits != null)
-            {
-                //Add units
-                foreach (GameConfiguration.Units u in gameConfiguration.baseUnits)
+                controls[i].SetTeam(currentTeam);
+                currentPlayerCountInTeam++;
+
+                if (gameConfiguration.playerPerTeam == currentPlayerCountInTeam)
                 {
-                    switch (u.kind)
+                    currentTeam++;
+                    currentPlayerCountInTeam = 0;
+                }
+
+                // Get player color
+                Color c;
+                ColorUtility.TryParseHtmlString(includedPlayers[i].color, out c);
+                if (colorsUsed.Contains(c))
+                {
+                    c = UnityEngine.Random.ColorHSV();
+                }
+                controls[i].ChangeColor(c);
+                colorsUsed.Add(c);
+
+                // Setup UI
+                if (i < playerCards.Length)
+                {
+                    if (playerCards[i] != null)
                     {
-                        case EntityKind.Interceptor:
-                            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].interceptor, (object script) =>
-                            {
-                                AddUnits(controls[i], c, u.count, interceptorBase, theme.interceptor, script);
-                            });
-                            break;
-                        case EntityKind.Destructor:
-                            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].destructor, (object script) =>
-                            {
-                                AddUnits(controls[i], c, u.count, destructorBase, theme.destructor, script);
-                            });
-                            break;
-                        default:
-                            continue;
+                        playerCards[i].Set(includedPlayers[i].name, c, controls[i].Team);
                     }
-                    
                 }
-            }
+
+                if (gameConfiguration.baseUnits != null)
+                {
+                    //Add units
+                    foreach (GameConfiguration.Units u in gameConfiguration.baseUnits)
+                    {
+                        switch (u.kind)
+                        {
+                            case EntityKind.Interceptor:
+                                AddUnits(controls[i], c, u.count, interceptorBase, theme.interceptor, data.interceptor);
+                                break;
+                            case EntityKind.Destructor:
+                                AddUnits(controls[i], c, u.count, destructorBase, theme.destructor, data.destructor);
+                                break;
+                            default:
+                                continue;
+                        }
+
+                    }
+                }
+            });
         }
 
         //map.BakeNavMesh();
 
+        // Set TimeScale
         currentTimeScaleIndex = 0;
         Time.timeScale = timeScales[currentTimeScaleIndex];
         if (timeScaleTxt != null)
             timeScaleTxt.text = "x" + timeScales[currentTimeScaleIndex];
+
+        // UI Show
+        transform.GetChild(0).gameObject.SetActive(true);
     }
 
-    void AddUnits(ControlBase control, Color c, int quantity, GameObject baseObj, GameObject prefab, object script)
+    void AddUnits(ControlBase control, Color c, int quantity, GameObject baseObj, GameObject prefab, Type script)
     {
         for (int j = 0; j < quantity; j++)
         {
@@ -302,7 +303,7 @@ public class ArenaManager : MonoBehaviour
             GameObject created = Instantiate(baseObj, control.transform.position, Quaternion.identity);
             GameObject skin = Instantiate(prefab, created.transform);
             skin.transform.SetAsFirstSibling();
-            created.AddComponent(script.GetType());
+            created.AddComponent(script);
             created.transform.position = control.transform.position + Vector3.forward - new Vector3(0, control.transform.position.y, 0);
             Agent a = created.GetComponent<Agent>();
             a.ChangeColor(c);
@@ -323,7 +324,7 @@ public class ArenaManager : MonoBehaviour
                     LogManager.Info("No map available for the selected player count.");
                     return;
                 }
-                map = list[Random.Range(0, list.Count)].GetComponent<Map>();
+                map = list[UnityEngine.Random.Range(0, list.Count)].GetComponent<Map>();
             }
             else
             {
@@ -399,6 +400,9 @@ public class ArenaManager : MonoBehaviour
                     if (winnerNameTxt != null)
                     {
                         winnerNameTxt.text = includedPlayers[c.Team].name;
+                        Color color = Color.white;
+                        ColorUtility.TryParseHtmlString(includedPlayers[c.Team].color, out color);
+                        winnerNameTxt.color = color;
                     }
                     gameOverUI.SetActive(true);
                     Debug.Log("Winner is " + includedPlayers[c.Team].name + "!");
@@ -514,4 +518,12 @@ public class ArenaManager : MonoBehaviour
         }
     }
 
+    // Back Button
+
+    public void GoBackToMenu()
+    {
+        gameOverUI.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(false);
+        SceneManager.LoadScene(1);
+    }
 }

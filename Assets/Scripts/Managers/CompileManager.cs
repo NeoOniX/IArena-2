@@ -50,7 +50,7 @@ public class CompileManager : MonoBehaviour
         }
     }
 
-    public void CompileCodeFromOrigin(string origin, Action<object> callback)
+    public void CompileCodeFromOrigin(string origin, Action<CompiledData> callback)
     {
         if (origin.StartsWith("http") || origin.StartsWith("https"))
         {
@@ -59,28 +59,28 @@ public class CompileManager : MonoBehaviour
         callback.Invoke(CompileCodeFromFile(origin));
     }
 
-    private object CompileCodeFromFile(string path)
+    private CompiledData CompileCodeFromFile(string path)
     {
         CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
 
         CompilerResults results = provider.CompileAssemblyFromFile(compilerParameters, path);
 
-        if (results.Errors.Count > 0)
+        if (results.Errors.HasErrors)
         {
-            Debug.LogError("Error while loading file :");
+            LogManager.Error("Errors while loading file : " + path, file: true);
             foreach (CompilerError error in results.Errors)
             {
-                Debug.Log(error.ErrorText);
+                LogManager.Error(error.ErrorText + " at line " + error.Line, false, true);
             }
             return null;
         }
         else
         {
-            return results.CompiledAssembly.CreateInstance(results.CompiledAssembly.GetExportedTypes()[0].Name);
+            return FromAssembly(results.CompiledAssembly);
         }
     }
 
-    private void CompileCodeFromURL(string URL, Action<object> callback)
+    private void CompileCodeFromURL(string URL, Action<CompiledData> callback)
     {
         StartCoroutine(WebRequest(URL, (string source) =>
         {
@@ -94,20 +94,40 @@ public class CompileManager : MonoBehaviour
 
             CompilerResults results = provider.CompileAssemblyFromSource(compilerParameters, source);
 
-            if (results.Errors.Count > 0)
+            if (results.Errors.HasErrors)
             {
-                Debug.LogError("Error while loading file :");
+                LogManager.Error("Errors while loading from URL : " + URL, file: true);
                 foreach (CompilerError error in results.Errors)
                 {
-                    Debug.Log(error.ErrorText);
+                    LogManager.Error(error.ErrorText + " at line " + error.Line, false, true);
                 }
                 callback.Invoke(null);
+                return;
             }
             else
             {
-                callback.Invoke(results.CompiledAssembly.CreateInstance(results.CompiledAssembly.GetExportedTypes()[0].Name));
+                callback.Invoke(FromAssembly(results.CompiledAssembly));
             }
         }));
+    }
+
+    // Extract Types from an Assembly
+    // Returns the first type to include the EntityKind in its name
+    // Else returns "null" to be checked against
+    private CompiledData FromAssembly(Assembly assembly)
+    {
+        Type control = null;
+        Type destructor = null;
+        Type interceptor = null;
+
+        foreach (Type type in assembly.GetExportedTypes())
+        {
+            if (type.Name.Contains("control", StringComparison.OrdinalIgnoreCase) && control == null) control = type;
+            if (type.Name.Contains("destructor", StringComparison.OrdinalIgnoreCase) && destructor == null) destructor = type;
+            if (type.Name.Contains("interceptor", StringComparison.OrdinalIgnoreCase) && interceptor == null) interceptor = type;
+        }
+
+        return new CompiledData(control, destructor, interceptor);
     }
 
     IEnumerator WebRequest(string URL, Action<string> callback)
@@ -129,4 +149,18 @@ public class CompileManager : MonoBehaviour
             }
         }
     }
+}
+
+public class CompiledData
+{
+    public CompiledData(Type control, Type destructor, Type interceptor)
+    {
+        this.control = control;
+        this.destructor = destructor;
+        this.interceptor = interceptor;
+    }
+
+    public Type control;
+    public Type destructor;
+    public Type interceptor;
 }

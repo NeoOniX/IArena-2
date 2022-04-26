@@ -29,7 +29,7 @@ public class LogManager : MonoBehaviour
     [Header("GameObjects")]
     public Transform list;
 
-    public static void Info(string message, bool screen = true, bool file = false)
+    public static void Info(string message, bool screen = true, bool file = false, bool debug = true)
     {
         if (screen)
         {
@@ -40,9 +40,13 @@ public class LogManager : MonoBehaviour
         {
             FileManager.LogInFile("Info : " + message);
         }
+        if (debug)
+        {
+            Debug.Log(message);
+        }
     }
 
-    public static void Warn(string message, bool screen = true, bool file = false)
+    public static void Warn(string message, bool screen = true, bool file = false, bool debug = true)
     {
         if (screen)
         {
@@ -53,9 +57,13 @@ public class LogManager : MonoBehaviour
         {
             FileManager.LogInFile("Warning : " + message);
         }
+        if (debug)
+        {
+            Debug.LogWarning(message);
+        }
     }
 
-    public static void Error(string message, bool screen = true, bool file = false)
+    public static void Error(string message, bool screen = true, bool file = false, bool debug = true)
     {
         if (screen)
         {
@@ -65,6 +73,10 @@ public class LogManager : MonoBehaviour
         if (file)
         {
             FileManager.LogInFile("Error : " + message);
+        }
+        if (debug)
+        {
+            Debug.LogError(message);
         }
     }
 

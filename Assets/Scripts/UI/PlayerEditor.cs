@@ -13,10 +13,8 @@ public class PlayerEditor : MonoBehaviour
     [Header("Color")]
     public TMP_InputField color;
     public Color defaultColor;
-    [Header("Classes")]
-    public TMP_InputField control;
-    public TMP_InputField destructor;
-    public TMP_InputField interceptor;
+    [Header("Source")]
+    public TMP_InputField source;
 
     private PlayerConfig currentPlayer;
     private PlayerConfig oldCurrentPlayer;
@@ -45,22 +43,10 @@ public class PlayerEditor : MonoBehaviour
         }
     }
 
-    public string Control
+    public string Source
     {
-        get { return currentPlayer.control; }
-        set { currentPlayer.control = value; }
-    }
-
-    public string Destructor
-    {
-        get { return currentPlayer.destructor; }
-        set { currentPlayer.destructor = value; }
-    }
-
-    public string Interceptor
-    {
-        get { return currentPlayer.interceptor; }
-        set { currentPlayer.interceptor = value; }
+        get { return currentPlayer.source; }
+        set { currentPlayer.source = value; }
     }
 
     private string OpenPathCommon(TMP_InputField source)
@@ -75,21 +61,9 @@ public class PlayerEditor : MonoBehaviour
         return path;
     }
 
-    public void OpenControl()
+    public void OpenSource()
     {
-        Control = OpenPathCommon(control);
-    }
-
-    public void OpenDestructor()
-    {
-
-        Destructor = OpenPathCommon(destructor);
-    }
-
-    public void OpenInterceptor()
-    {
-
-        Interceptor = OpenPathCommon(interceptor);
+        Source = OpenPathCommon(source);
     }
 
     public void SavePlayer()
@@ -111,8 +85,6 @@ public class PlayerEditor : MonoBehaviour
         Color c = defaultColor;
         ColorUtility.TryParseHtmlString(player.color, out c);
         color.textComponent.color = c;
-        control.text = player.control;
-        destructor.text = player.destructor;
-        interceptor.text = player.interceptor;
+        source.text = player.source;
     }
 }

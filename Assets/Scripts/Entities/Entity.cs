@@ -232,7 +232,7 @@ public abstract class Entity : MonoBehaviour {
     public void ReceiveHit(float hitDamage, Vector3 hitDirection){
         System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
         var method = stackTrace.GetFrame(1).GetMethod();
-        if (method.ReflectedType.Name != "Projectil" || method.Name != "ApplyDamage"){
+        if (method.ReflectedType.Name != "Projectile" || method.Name != "ApplyDamage"){
             throw new System.Exception("Someone is cheating ! (try to apply damage from :"+method.ReflectedType.Name + " with method "+method.Name);
         }
 
