@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 066c170b044ff6e44827bc35824344b0, type: 3}
+  m_Name: Unfortunate Son
+  m_EditorClassIdentifier: 
+  bgms:
+  - {fileID: 8300000, guid: 8ca5fd0aff53b894ab43c69fae2ff665, type: 3}
+  - {fileID: 8300000, guid: 5645d6885f113bb4b9c5c4b7819202c6, type: 3}
+  sfxs:
+  - Kinds: 01000000
+    ShootSound: {fileID: 8300000, guid: 7a8991233efcfd24485edbca9f8d3883, type: 3}
+  - Kinds: 02000000
+    ShootSound: {fileID: 8300000, guid: f0707ac692c3be9458de3c452815e6d2, type: 3}
+  projectile: {fileID: 2825927588204186682, guid: 9205f3455b260d543a1d2faa99d475a6,
+    type: 3}
+  control: {fileID: 3634003228563862125, guid: b32d9887ee56fc74eb31a89205bada5d, type: 3}
+  destructor: {fileID: 854356544068261820, guid: 60425dcc68715df41941aa3ed850c437,
+    type: 3}
+  interceptor: {fileID: 3084280448045271908, guid: 5337534ba1725a4439f317234be6beef,
+    type: 3}

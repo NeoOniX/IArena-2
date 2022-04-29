@@ -79,7 +79,6 @@ public abstract class Entity : MonoBehaviour {
 
     private FieldOfView fieldOfView;
     protected TMPro.TextMeshProUGUI debugTxt;
-    private MeshRenderer renderer;
     private List<TargetInformations> targets = new List<TargetInformations>();
 
     private Logs logs = new Logs();
@@ -106,15 +105,6 @@ public abstract class Entity : MonoBehaviour {
 
     protected virtual void Update(){
         logs.printInConsole = printLogs;
-    }
-
-    public void ChangeColor(Color color){
-        if (renderer == null){
-            renderer = GetComponentInChildren<MeshRenderer>();
-        }
-        if (renderer != null){
-            renderer.material.SetColor("_BaseColor",color);
-        }
     }
 
     private IEnumerator InternRoutine(){

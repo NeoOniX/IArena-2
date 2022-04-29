@@ -27,7 +27,10 @@ public class LogManager : MonoBehaviour
     public GameObject warn;
     public GameObject error;
     [Header("GameObjects")]
+    public GameObject canvas;
     public Transform list;
+
+    private List<GameObject> _current = new List<GameObject>();
 
     public static void Info(string message, bool screen = true, bool file = false, bool debug = true)
     {
@@ -82,9 +85,11 @@ public class LogManager : MonoBehaviour
 
     private void Log(GameObject log, string message)
     {
+        canvas.SetActive(true);
         log.transform.GetChild(1).GetComponent<TMP_Text>().text += message;
         log.transform.SetParent(list, false);
         log.transform.SetAsFirstSibling();
+        _current.Add(log);
         StartCoroutine(waitAndDestroy(10, log));
     }
 
@@ -92,5 +97,10 @@ public class LogManager : MonoBehaviour
     {
         yield return new WaitForSeconds(seconds);
         Destroy(toDestroy);
+        _current.Remove(toDestroy);
+        if (_current.Count == 0)
+        {
+            canvas.SetActive(false);
+        }
     }
 }

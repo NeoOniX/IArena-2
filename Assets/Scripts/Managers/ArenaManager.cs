@@ -112,9 +112,9 @@ public class ArenaManager : MonoBehaviour
         }
     }
 
-    private Theme theme;
-    private GameConfiguration gameConfiguration;
-    private Map map;
+    public Theme theme;
+    public GameConfiguration gameConfiguration;
+    public Map map;
     private Map terrain;
 
     void Start()
@@ -198,6 +198,8 @@ public class ArenaManager : MonoBehaviour
     {
         if (!CanInitGame()) return;
 
+        LogManager.Info("Starting game...", screen: false, file: true);
+
         // Projectiles Pool
         InstantiatePool();
 
@@ -214,14 +216,18 @@ public class ArenaManager : MonoBehaviour
         // Load teams
         for (int i = 0; i < gameConfiguration.teamCount; i++)
         {
+            LogManager.Info(" > Spawn for " + includedPlayers[i].name + " : Starting...", screen: false, file: true);
             Transform spawn = terrain.GetSpawnTransform();
+            LogManager.Info(" > Spawn for " + includedPlayers[i].name + " : Done!", screen: false, file: true);
+
+            LogManager.Info(" > Scripts for " + includedPlayers[i].name + " : Starting...", screen: false, file: true);
 
             // Get all types from player
             CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].source, (CompiledData data) =>
             {
-                //Create control
+                // Create control
                 GameObject controlGo = Instantiate(controlBase, spawn.position, Quaternion.identity);
-                GameObject skin = Instantiate(theme.control, controlGo.transform);
+                GameObject skin = Instantiate(theme.control.gameObject, controlGo.transform);
                 skin.transform.SetAsFirstSibling();
                 controlGo.AddComponent(data.control);
                 controlGo.name = "Control_" + includedPlayers[i].name;
@@ -229,7 +235,7 @@ public class ArenaManager : MonoBehaviour
 
                 if (controls[i] == null)
                 {
-                    Debug.LogError("Missing Control Component for Control prefab with player " + includedPlayers[i].name);
+                    LogManager.Error(" > Scripts for " + includedPlayers[i].name + " : Error! No class found for Control : it either don't have \"control\" in its name, or it doesn't extends from ControlBase class.", screen: true, file: true);
                     return;
                 }
 
@@ -249,7 +255,7 @@ public class ArenaManager : MonoBehaviour
                 {
                     c = UnityEngine.Random.ColorHSV();
                 }
-                controls[i].ChangeColor(c);
+                controls[i].GetComponentInChildren<ThemeElement>().Setup(c);
                 colorsUsed.Add(c);
 
                 // Setup UI
@@ -269,10 +275,10 @@ public class ArenaManager : MonoBehaviour
                         switch (u.kind)
                         {
                             case EntityKind.Interceptor:
-                                AddUnits(controls[i], c, u.count, interceptorBase, theme.interceptor, data.interceptor);
+                                AddUnits(controls[i], c, u.count, interceptorBase, theme.interceptor.gameObject, data.interceptor, u.kind);
                                 break;
                             case EntityKind.Destructor:
-                                AddUnits(controls[i], c, u.count, destructorBase, theme.destructor, data.destructor);
+                                AddUnits(controls[i], c, u.count, destructorBase, theme.destructor.gameObject, data.destructor, u.kind);
                                 break;
                             default:
                                 continue;
@@ -280,10 +286,9 @@ public class ArenaManager : MonoBehaviour
 
                     }
                 }
+                LogManager.Info(" > Scripts for " + includedPlayers[i].name + " : Done!", screen: false, file: true);
             });
         }
-
-        //map.BakeNavMesh();
 
         // Set TimeScale
         currentTimeScaleIndex = 0;
@@ -293,9 +298,12 @@ public class ArenaManager : MonoBehaviour
 
         // UI Show
         transform.GetChild(0).gameObject.SetActive(true);
+
+
+        LogManager.Info("Game started!", screen: false, file: true);
     }
 
-    void AddUnits(ControlBase control, Color c, int quantity, GameObject baseObj, GameObject prefab, Type script)
+    void AddUnits(ControlBase control, Color c, int quantity, GameObject baseObj, GameObject prefab, Type script, EntityKind kind)
     {
         for (int j = 0; j < quantity; j++)
         {
@@ -305,14 +313,17 @@ public class ArenaManager : MonoBehaviour
             skin.transform.SetAsFirstSibling();
             created.AddComponent(script);
             created.transform.position = control.transform.position + Vector3.forward - new Vector3(0, control.transform.position.y, 0);
+            created.GetComponentInChildren<ThemeElement>().Setup(c);
+            created.GetComponent<AudioSource>().clip = theme.sfxs.Find((clip) => clip.Kinds.Contains(kind)).ShootSound;
             Agent a = created.GetComponent<Agent>();
-            a.ChangeColor(c);
             control.AddAgent(a);
         }
     }
 
     void SelectMap()
     {
+        LogManager.Info(" > Map selection : Starting...", screen: false, file: true);
+
         // Random map
         if (MapRandom)
         {
@@ -336,18 +347,23 @@ public class ArenaManager : MonoBehaviour
         // Instantiate Map
         terrain = Instantiate(map.gameObject).GetComponent<Map>();
 
-        //Setup camera
+        // Setup camera
         Camera.main.fieldOfView = map.CamFOV;
+
+        LogManager.Info(" > Map selection : Done!", screen: false, file: true);
     }
 
     void InstantiatePool()
     {
+        LogManager.Info(" > Projectile pool : Starting...", screen: false, file: true);
         for (int i = 0; i < poolCount; i++)
         {
-            GameObject go = Instantiate(theme.projectile);
+            GameObject go = Instantiate(theme.projectile.gameObject);
             go.SetActive(false);
             _pool.Add(go);
         }
+
+        LogManager.Info(" > Projectile pool : Done!", screen: false, file: true);
     }
 
     public GameObject GetProjectile()
@@ -362,7 +378,7 @@ public class ArenaManager : MonoBehaviour
         if (!poolWillGrow)
             return null;
 
-        GameObject go = Instantiate(theme.projectile);
+        GameObject go = Instantiate(theme.projectile.gameObject);
         go.SetActive(false);
         _pool.Add(go);
         return go;
@@ -370,7 +386,7 @@ public class ArenaManager : MonoBehaviour
 
     public void ControlIsDestroyed(ControlBase control)
     {
-        //Check if it's a controlbase who called this function
+        // Check origin of method call
         System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
         var method = stackTrace.GetFrame(1).GetMethod();
         if (method.ReflectedType.Name != "ControlBase" || method.Name != "LastWordBeforeToDie")
@@ -378,25 +394,28 @@ public class ArenaManager : MonoBehaviour
             throw new System.Exception("Someone is cheating ! (try to end the game from :" + method.ReflectedType.Name + " with method " + method.Name);
         }
 
-        //Check if control doesn't have life
+        // Check if control doesn't have life
         if (control.IsAlive)
         {
             Debug.LogError("Control has been destroyed but still had life.");
             return;
         }
 
-        //Remove players from actual players
+        // Remove players from actual players
         eliminated.Add(control.Team);
-        Debug.Log("Eliminated " + eliminated.Count + " / " + includedPlayers.Count);
+
+        // Logs
+        LogManager.Info("Player " + includedPlayers[control.Team].name + " eliminated.", screen: false, file: true);
+        LogManager.Info("Player <color=" + includedPlayers[control.Team].color + ">" + includedPlayers[control.Team].name + "</color> eliminated.", debug: false);
+
+        // Game Done
         if (eliminated.Count == includedPlayers.Count - 1)
         {
-            Debug.Log("Finish");
-            //We're done we got our winner
             foreach (ControlBase c in controls)
             {
                 if (c.IsAlive && !eliminated.Contains(c.Team))
                 {
-                    //Show gameover screen
+                    // Show GameOver Screen
                     if (winnerNameTxt != null)
                     {
                         winnerNameTxt.text = includedPlayers[c.Team].name;
@@ -405,7 +424,7 @@ public class ArenaManager : MonoBehaviour
                         winnerNameTxt.color = color;
                     }
                     gameOverUI.SetActive(true);
-                    Debug.Log("Winner is " + includedPlayers[c.Team].name + "!");
+                    LogManager.Info("Game ended : " + includedPlayers[c.Team].name + " won the game.", screen: false, file: true);
                 }
             }
         }
@@ -451,7 +470,7 @@ public class ArenaManager : MonoBehaviour
 
     public void AddPlayer(PlayerConfig p)
     {
-        
+        LogManager.Info("Loaded player <color=" + p.color + ">" + p.name);
         players.Add(p);
     }
 

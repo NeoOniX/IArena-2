@@ -12,10 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 066c170b044ff6e44827bc35824344b0, type: 3}
   m_Name: Original
   m_EditorClassIdentifier: 
-  projectile: {fileID: 2115514145958413827, guid: af8de5e1302607d46acbbe53787c9e8b,
+  bgms:
+  - {fileID: 8300000, guid: b02c340c7c3f6604db06fa6a6600852e, type: 3}
+  sfxs:
+  - Kinds: 0100000002000000
+    ShootSound: {fileID: 8300000, guid: 163a631ef0ae0844fa7e09b598227965, type: 3}
+  projectile: {fileID: 2825927588204186682, guid: af8de5e1302607d46acbbe53787c9e8b,
     type: 3}
-  control: {fileID: 3430330650245319497, guid: 58fd39b9545d46b4f8276a95a1ea5998, type: 3}
-  destructor: {fileID: 1109480066068870536, guid: 4d253a77f5861d348b625a1130228b84,
+  control: {fileID: 8328724517053327475, guid: 58fd39b9545d46b4f8276a95a1ea5998, type: 3}
+  destructor: {fileID: 553528770767084633, guid: 4d253a77f5861d348b625a1130228b84,
     type: 3}
-  interceptor: {fileID: 1356583614125208394, guid: 466c196541ce0144da84e84dd62dc042,
+  interceptor: {fileID: 2336514456184946240, guid: 466c196541ce0144da84e84dd62dc042,
     type: 3}

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -20,6 +21,11 @@ public class MainMenu : MonoBehaviour
     public TMP_Dropdown matchTypeDrop;
     public TMP_Dropdown themeDrop;
     public TMP_Dropdown mapDrop;
+    [Header("Settings")]
+    public AudioMixer mixer;
+    public Slider masterVolumeSlider;
+    public Slider musicVolumeSlider;
+    public Slider soundVolumeSlider;
 
     // Player Selection Dynamic Var
 
@@ -60,6 +66,65 @@ public class MainMenu : MonoBehaviour
         set { ArenaManager.Instance.mapIndex = value; }
     }
 
+    // Settings Dynamic Vars
+
+    public float masterVolume
+    {
+        get
+        {
+            if (!PlayerPrefs.HasKey("MasterVolume"))
+            {
+                PlayerPrefs.SetFloat("MasterVolume", 0);
+                PlayerPrefs.Save();
+            }
+            return PlayerPrefs.GetFloat("MasterVolume");
+        }
+        set
+        {
+            PlayerPrefs.SetFloat("MasterVolume", value);
+            PlayerPrefs.Save();
+            mixer.SetFloat("Master", value);
+        }
+    }
+
+    public float musicVolume
+    {
+        get
+        {
+            if (!PlayerPrefs.HasKey("MusicVolume"))
+            {
+                PlayerPrefs.SetFloat("MusicVolume", 0);
+                PlayerPrefs.Save();
+            }
+            return PlayerPrefs.GetFloat("MusicVolume");
+        }
+        set
+        {
+            PlayerPrefs.SetFloat("MusicVolume", value);
+            PlayerPrefs.Save();
+            mixer.SetFloat("Music", value);
+        }
+    }
+
+    public float soundVolume
+    {
+        get
+        {
+            if (!PlayerPrefs.HasKey("SoundVolume"))
+            {
+                PlayerPrefs.SetFloat("SoundVolume", 0);
+                PlayerPrefs.Save();
+            }
+            return PlayerPrefs.GetFloat("SoundVolume");
+        }
+        set
+        {
+            PlayerPrefs.SetFloat("SoundVolume", value);
+            PlayerPrefs.Save();
+            mixer.SetFloat("Sound", value);
+        }
+    }
+
     // Setup
 
     void Start()
@@ -67,6 +132,7 @@ public class MainMenu : MonoBehaviour
         ShowPlayers();
         ShowIncludedPlayers();
         SetupMatchSettings();
+        SetupSound();
     }
 
     public void ShowPlayers()
@@ -190,6 +256,19 @@ public class MainMenu : MonoBehaviour
                 map.name
             });
         }
+    }
+
+    private void SetupSound()
+    {
+        // Settup Sliders
+        masterVolumeSlider.value = masterVolume;
+        musicVolumeSlider.value = musicVolume;
+        soundVolumeSlider.value = soundVolume;
+
+        // Update volume mixer variables
+        masterVolume = masterVolume;
+        musicVolume = musicVolume;
+        soundVolume = soundVolume;
     }
 
     public void LaunchMatch()

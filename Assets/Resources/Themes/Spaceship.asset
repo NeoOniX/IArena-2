@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 066c170b044ff6e44827bc35824344b0, type: 3}
+  m_Name: Spaceship
+  m_EditorClassIdentifier: 
+  bgms:
+  - {fileID: 8300000, guid: 619b0342b7e05ea42a34599dc0306a49, type: 3}
+  sfxs:
+  - Kinds: 0100000002000000
+    ShootSound: {fileID: 8300000, guid: 332b663979546cd43a6f048676290704, type: 3}
+  projectile: {fileID: 2825927588204186682, guid: af8de5e1302607d46acbbe53787c9e8b,
+    type: 3}
+  control: {fileID: 7408857364804288197, guid: a37a893dd49e3c04082260dd21dcb2f9, type: 3}
+  destructor: {fileID: -6431054753791292301, guid: 175f327c4e0243c4eb3c06c2a2156af9,
+    type: 3}
+  interceptor: {fileID: 7500307087710549667, guid: 6b87724cc0967c5468060931fbad3f66,
+    type: 3}

@@ -152,6 +152,7 @@ public abstract class Agent : AIStateAgent
             proj.SetActive(true);
             energyAmount -= energyCostToShoot;
             canShoot = false;
+            GetComponent<AudioSource>().Play();
             return true;
         }else{
             return false;

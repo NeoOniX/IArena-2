@@ -35,7 +35,8 @@ public class Projectile : MonoBehaviour
     }
 
     void OnTriggerEnter(Collider collider){
-        if (collider.gameObject != null && thrower != null && collider.gameObject == thrower.gameObject){
+        if (collider.gameObject != null && thrower != null && (collider.gameObject == thrower.gameObject || collider.transform.IsChildOf(thrower.transform)))
+        {
             //Ignore ourself
             return;
         }

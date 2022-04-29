@@ -280,6 +280,7 @@ MonoBehaviour:
   info: {fileID: 5606933985777472711, guid: 03eccd5c0983e5948b8ec8cc1ac85f41, type: 3}
   warn: {fileID: 6309264674257522379, guid: eb8268d28257f6c469417d6947affd78, type: 3}
   error: {fileID: 9113419142029164332, guid: be9c4d805be12104fa183ffbaf9c0abc, type: 3}
+  canvas: {fileID: 1192213395}
   list: {fileID: 549357957}
 --- !u!4 &36254562
 Transform:
@@ -2243,6 +2244,9 @@ MonoBehaviour:
   gameConfigurations: []
   themes: []
   maps: []
+  theme: {fileID: 0}
+  gameConfiguration: {fileID: 0}
+  map: {fileID: 0}
 --- !u!1 &1015977217
 GameObject:
   m_ObjectHideFlags: 0
@@ -2911,7 +2915,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1192213396
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2992,7 +2996,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!1 &1195326223
 GameObject:
@@ -3030,9 +3034,9 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1195326225
 MonoBehaviour:
@@ -4680,7 +4684,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4834,9 +4838,9 @@ RectTransform:
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 20}
+  m_SizeDelta: {x: -17, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &2084257814
 MonoBehaviour:
