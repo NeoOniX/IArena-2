@@ -50,16 +50,18 @@ public class CompileManager : MonoBehaviour
         }
     }
 
-    public void CompileCodeFromOrigin(string origin, Action<CompiledData> callback)
+    public void CompileCodeFromOrigin(int index, string origin, Action<CompiledData> callback)
     {
         if (origin.StartsWith("http") || origin.StartsWith("https"))
         {
-            CompileCodeFromURL(origin, callback);
+            CompileCodeFromURL(index, origin, callback);
+        } else
+        {
+            callback.Invoke(CompileCodeFromFile(index, origin));
         }
-        callback.Invoke(CompileCodeFromFile(origin));
     }
 
-    private CompiledData CompileCodeFromFile(string path)
+    private CompiledData CompileCodeFromFile(int index, string path)
     {
         CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
 
@@ -76,11 +78,11 @@ public class CompileManager : MonoBehaviour
         }
         else
         {
-            return FromAssembly(results.CompiledAssembly);
+            return FromAssembly(index, results.CompiledAssembly);
         }
     }
 
-    private void CompileCodeFromURL(string URL, Action<CompiledData> callback)
+    private void CompileCodeFromURL(int index, string URL, Action<CompiledData> callback)
     {
         StartCoroutine(WebRequest(URL, (string source) =>
         {
@@ -106,7 +108,7 @@ public class CompileManager : MonoBehaviour
             }
             else
             {
-                callback.Invoke(FromAssembly(results.CompiledAssembly));
+                callback.Invoke(FromAssembly(index, results.CompiledAssembly));
             }
         }));
     }
@@ -114,7 +116,7 @@ public class CompileManager : MonoBehaviour
     // Extract Types from an Assembly
     // Returns the first type to include the EntityKind in its name
     // Else returns "null" to be checked against
-    private CompiledData FromAssembly(Assembly assembly)
+    private CompiledData FromAssembly(int index, Assembly assembly)
     {
         Type control = null;
         Type destructor = null;
@@ -127,7 +129,7 @@ public class CompileManager : MonoBehaviour
             if (type.Name.Contains("interceptor", StringComparison.OrdinalIgnoreCase) && interceptor == null) interceptor = type;
         }
 
-        return new CompiledData(control, destructor, interceptor);
+        return new CompiledData(index, control, destructor, interceptor);
     }
 
     IEnumerator WebRequest(string URL, Action<string> callback)
@@ -153,13 +155,15 @@ public class CompileManager : MonoBehaviour
 
 public class CompiledData
 {
-    public CompiledData(Type control, Type destructor, Type interceptor)
+    public CompiledData(int index, Type control, Type destructor, Type interceptor)
     {
+        this.index = index;
         this.control = control;
         this.destructor = destructor;
         this.interceptor = interceptor;
     }
 
+    public int index;
     public Type control;
     public Type destructor;
     public Type interceptor;

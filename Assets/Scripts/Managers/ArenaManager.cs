@@ -223,23 +223,23 @@ public class ArenaManager : MonoBehaviour
             LogManager.Info(" > Scripts for " + includedPlayers[i].name + " : Starting...", screen: false, file: true);
 
             // Get all types from player
-            CompileManager.Instance.CompileCodeFromOrigin(includedPlayers[i].source, (CompiledData data) =>
+            CompileManager.Instance.CompileCodeFromOrigin(i, includedPlayers[i].source, (CompiledData data) =>
             {
                 // Create control
                 GameObject controlGo = Instantiate(controlBase, spawn.position, Quaternion.identity);
                 GameObject skin = Instantiate(theme.control.gameObject, controlGo.transform);
                 skin.transform.SetAsFirstSibling();
                 controlGo.AddComponent(data.control);
-                controlGo.name = "Control_" + includedPlayers[i].name;
-                controls[i] = controlGo.GetComponent<ControlBase>();
+                controlGo.name = "Control_" + includedPlayers[data.index].name;
+                controls[data.index] = controlGo.GetComponent<ControlBase>();
 
-                if (controls[i] == null)
+                if (controls[data.index] == null)
                 {
-                    LogManager.Error(" > Scripts for " + includedPlayers[i].name + " : Error! No class found for Control : it either don't have \"control\" in its name, or it doesn't extends from ControlBase class.", screen: true, file: true);
+                    LogManager.Error(" > Scripts for " + includedPlayers[data.index].name + " : Error! No class found for Control : it either don't have \"control\" in its name, or it doesn't extends from ControlBase class.", screen: true, file: true);
                     return;
                 }
 
-                controls[i].SetTeam(currentTeam);
+                controls[data.index].SetTeam(currentTeam);
                 currentPlayerCountInTeam++;
 
                 if (gameConfiguration.playerPerTeam == currentPlayerCountInTeam)
@@ -250,20 +250,20 @@ public class ArenaManager : MonoBehaviour
 
                 // Get player color
                 Color c;
-                ColorUtility.TryParseHtmlString(includedPlayers[i].color, out c);
+                ColorUtility.TryParseHtmlString(includedPlayers[data.index].color, out c);
                 if (colorsUsed.Contains(c))
                 {
                     c = UnityEngine.Random.ColorHSV();
                 }
-                controls[i].GetComponentInChildren<ThemeElement>().Setup(c);
+                controls[data.index].GetComponentInChildren<ThemeElement>().Setup(c);
                 colorsUsed.Add(c);
 
                 // Setup UI
                 if (i < playerCards.Length)
                 {
-                    if (playerCards[i] != null)
+                    if (playerCards[data.index] != null)
                     {
-                        playerCards[i].Set(includedPlayers[i].name, c, controls[i].Team);
+                        playerCards[data.index].Set(includedPlayers[data.index].name, c, controls[data.index].Team);
                     }
                 }
 
@@ -275,10 +275,10 @@ public class ArenaManager : MonoBehaviour
                         switch (u.kind)
                         {
                             case EntityKind.Interceptor:
-                                AddUnits(controls[i], c, u.count, interceptorBase, theme.interceptor.gameObject, data.interceptor, u.kind);
+                                AddUnits(controls[data.index], c, u.count, interceptorBase, theme.interceptor.gameObject, data.interceptor, u.kind);
                                 break;
                             case EntityKind.Destructor:
-                                AddUnits(controls[i], c, u.count, destructorBase, theme.destructor.gameObject, data.destructor, u.kind);
+                                AddUnits(controls[data.index], c, u.count, destructorBase, theme.destructor.gameObject, data.destructor, u.kind);
                                 break;
                             default:
                                 continue;
@@ -286,7 +286,7 @@ public class ArenaManager : MonoBehaviour
 
                     }
                 }
-                LogManager.Info(" > Scripts for " + includedPlayers[i].name + " : Done!", screen: false, file: true);
+                LogManager.Info(" > Scripts for " + includedPlayers[data.index].name + " : Done!", screen: false, file: true);
             });
         }
 
