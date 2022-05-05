@@ -7,6 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using Microsoft.CSharp;
 using UnityEngine.Networking;
+using System.Linq;
 
 public class CompileManager : MonoBehaviour
 {
@@ -27,23 +28,17 @@ public class CompileManager : MonoBehaviour
 
 
     // Compiler Options
-    Dictionary<string, string> providerOptions = new Dictionary<string, string>
-    {
-        {"CompilerVersion", "v3.5"}
-    };
     CompilerParameters compilerParameters = new CompilerParameters
     {
         GenerateInMemory = true,
         GenerateExecutable = false
     };
-    List<string> excludedAssemblies = new List<string> { "Anonymously Hosted DynamicMethods Assembly", "mscorlib" };
 
-    void Start()
+    private void Start()
     {
-        // Setup context transfer
         foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            if (!excludedAssemblies.Contains(assembly.GetName().Name))
+            if (!assembly.IsDynamic)
             {
                 compilerParameters.ReferencedAssemblies.Add(assembly.Location);
             }
@@ -63,9 +58,9 @@ public class CompileManager : MonoBehaviour
 
     private CompiledData CompileCodeFromFile(int index, string path)
     {
-        CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
+        CSharpCompiler.CodeCompiler compiler = new CSharpCompiler.CodeCompiler();
 
-        CompilerResults results = provider.CompileAssemblyFromFile(compilerParameters, path);
+        CompilerResults results = compiler.CompileAssemblyFromFile(compilerParameters, path);
 
         if (results.Errors.HasErrors)
         {
@@ -92,9 +87,10 @@ public class CompileManager : MonoBehaviour
                 return;
             }
 
-            CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
+            CSharpCompiler.CodeCompiler compiler = new CSharpCompiler.CodeCompiler();
 
-            CompilerResults results = provider.CompileAssemblyFromSource(compilerParameters, source);
+            CompilerResults results = compiler.CompileAssemblyFromSource(compilerParameters, source);
+
 
             if (results.Errors.HasErrors)
             {
@@ -108,6 +104,8 @@ public class CompileManager : MonoBehaviour
             }
             else
             {
+                Debug.Log(results.CompiledAssembly.ExportedTypes.First());
+                //LogManager.Info(results.CompiledAssembly.FullName, false, true);
                 callback.Invoke(FromAssembly(index, results.CompiledAssembly));
             }
         }));
