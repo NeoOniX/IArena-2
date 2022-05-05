@@ -104,8 +104,6 @@ public class CompileManager : MonoBehaviour
             }
             else
             {
-                Debug.Log(results.CompiledAssembly.ExportedTypes.First());
-                //LogManager.Info(results.CompiledAssembly.FullName, false, true);
                 callback.Invoke(FromAssembly(index, results.CompiledAssembly));
             }
         }));
@@ -120,7 +118,7 @@ public class CompileManager : MonoBehaviour
         Type destructor = null;
         Type interceptor = null;
 
-        foreach (Type type in assembly.GetExportedTypes())
+        foreach (Type type in assembly.GetTypes())
         {
             if (type.Name.Contains("control", StringComparison.OrdinalIgnoreCase) && control == null) control = type;
             if (type.Name.Contains("destructor", StringComparison.OrdinalIgnoreCase) && destructor == null) destructor = type;
